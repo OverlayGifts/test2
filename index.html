@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -112,8 +113,8 @@
 
   <script>
     const video = document.querySelector('#video');
-    const button = document.querySelector('#playPauseButton');
-    const buttonText = document.querySelector('#playPauseText');
+    const playPauseButton = document.querySelector('#playPauseButton');
+    const playPauseText = document.querySelector('#playPauseText');
     const recordButton = document.querySelector('#recordButton');
 
     let mediaRecorder;
@@ -123,15 +124,15 @@
     video.pause();
     video.muted = true;
 
-    button.addEventListener('click', function() {
+    playPauseButton.addEventListener('click', function() {
       if (video.paused) {
         video.muted = false;  // Unmute the video
         video.play();  // Play the video
-        button.style.backgroundImage = "url('https://cdn-icons-png.flaticon.com/512/109/109197.png')";
-        buttonText.textContent = 'Pause';
+        playPauseButton.style.backgroundImage = "url('https://cdn-icons-png.flaticon.com/512/109/109197.png')";
+        playPauseText.textContent = 'Pause';
       } else {
         video.pause();  // Pause the video
-        buttonText.textContent = 'Play with Sound';
+        playPauseText.textContent = 'Play with Sound';
       }
     });
 
@@ -139,36 +140,40 @@
     target.addEventListener('mindar-image-target-visible', () => {
       if (!video.muted) {
         video.play();
-        buttonText.textContent = 'Pause';
+        playPauseText.textContent = 'Pause';
       }
     });
     target.addEventListener('mindar-image-target-invisible', () => {
       video.pause();
-      buttonText.textContent = 'Play with Sound';
+      playPauseText.textContent = 'Play with Sound';
     });
 
     recordButton.addEventListener('click', async () => {
       if (recordButton.textContent === 'Start Recording') {
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: { mediaSource: "screen" }
-        });
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = function(event) {
-          if (event.data.size > 0) {
-            chunks.push(event.data);
-          }
-        };
-        mediaRecorder.onstop = function() {
-          const blob = new Blob(chunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'screen-recording.webm';
-          a.click();
-          chunks = [];
-        };
-        mediaRecorder.start();
-        recordButton.textContent = 'Stop Recording';
+        try {
+          const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { mediaSource: "screen" }
+          });
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = function(event) {
+            if (event.data.size > 0) {
+              chunks.push(event.data);
+            }
+          };
+          mediaRecorder.onstop = function() {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'screen-recording.webm';
+            a.click();
+            chunks = [];
+          };
+          mediaRecorder.start();
+          recordButton.textContent = 'Stop Recording';
+        } catch (err) {
+          console.error('Error accessing display media:', err);
+        }
       } else {
         mediaRecorder.stop();
         recordButton.textContent = 'Start Recording';
